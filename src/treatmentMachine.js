@@ -55,10 +55,21 @@ export default Machine({
         treating: {
             on: {
                 FINISHED: 'finished',
+                NEXT: {
+                    actions: assign({
+                        currentWord: context =>
+                            Math.min(context.words.length - 1, context.currentWord + 1),
+                    }),
+                },
+                PREVIOUS: {
+                    actions: assign({
+                        currentWord: context => Math.max(0, context.currentWord - 1),
+                    }),
+                },
             },
             ...errorFeedbackStates,
         },
-        goodbye: {
+        finished: {
             on: {
                 HANGUP: 'notes',
             },

@@ -4,6 +4,8 @@ import treatmentMachine from '../../treatmentMachine';
 
 import Word from './Word';
 
+import styles from './treat.module.css';
+
 export default function Words(props) {
     const [machine, send] = useMachine(treatmentMachine, { context: { patient: props.patient } });
 
@@ -12,30 +14,39 @@ export default function Words(props) {
     }
     if (machine.matches('notes')) {
         return (
-            <div>
-                {machine.context.notes.map((note, i) => (
-                    <div key={i}>
-                        <div>{note.date}</div>
-                        <div>{note.text}</div>
-                    </div>
-                ))}
-                <button onClick={() => send('READY')}>Ready</button>
+            <div className={styles.container}>
+                <div className={styles.notes}>
+                    <h1>Notes</h1>
+                    {machine.context.notes.map((note, i) => (
+                        <div key={i}>
+                            <h3>{note.date}</h3>
+                            <div>{note.text}</div>
+                        </div>
+                    ))}
+                </div>
+                <button className={styles.notesButton} onClick={() => send('READY')}>
+                    Ready
+                </button>
             </div>
         );
     }
     if (machine.matches('pretreatment')) {
         return (
-            <div>
+            <div className={styles.interstitial}>
                 <div>Welcome</div>
                 <button onClick={() => send('START')}>Start</button>
             </div>
         );
     }
+    const word = machine.context.words[machine.context.currentWord];
     return (
         <div>
-            {machine.context.words.map(word => (
-                <Word word={word} key={word.word} />
-            ))}
+            <Word
+                word={word}
+                key={word.word}
+                next={() => send('NEXT')}
+                previous={() => send('PREVIOUS')}
+            />
         </div>
     );
 }

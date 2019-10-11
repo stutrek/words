@@ -1,8 +1,6 @@
 import { Machine, assign } from 'xstate';
 
-import treatmentMachine from './treatmentMachine';
-
-import { fetchPatients, fetchPatient } from './api';
+import { fetchPatients } from './api';
 
 export default Machine({
     id: 'patient',

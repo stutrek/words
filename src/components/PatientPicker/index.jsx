@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import styles from './picker.module.css';
 
 export default function PatientPicker(props) {
     const { pickPatient } = props;
@@ -11,11 +12,12 @@ export default function PatientPicker(props) {
     );
 
     return (
-        <div>
+        <div className={styles.container}>
             <select onChange={onChange}>
-                {props.patients.map(kid => (
-                    <option value={kid} key={kid}>
-                        {kid}
+                <option>Select a patient</option>
+                {props.patients.map(patient => (
+                    <option value={patient} key={patient}>
+                        {patient}
                     </option>
                 ))}
             </select>
