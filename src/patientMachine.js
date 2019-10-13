@@ -1,4 +1,6 @@
-import { Machine, assign } from 'xstate';
+import { Machine, assign, send } from 'xstate';
+
+import treatmentMachine from './treatmentMachine';
 
 import { fetchPatients } from './api';
 
@@ -28,19 +30,26 @@ export default Machine({
             on: {
                 SELECT: {
                     target: 'treat',
-                    actions: assign({
-                        patient: (context, event) => event.patient,
-                    }),
                 },
                 RELOAD: 'loadingPatients',
             },
         },
 
         treat: {
-            on: {
-                FINISHED: 'select',
+            invoke: {
+                id: 'treatment',
+                src: treatmentMachine,
+                onDone: 'choose',
             },
+            entry: send(
+                (context, event) => ({
+                    type: 'LOAD',
+                    patient: event.patient,
+                }),
+                { to: 'treatment' }
+            ),
         },
+
         error: {
             on: {
                 START_OVER: 'loading',

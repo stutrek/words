@@ -44,7 +44,7 @@ export const fetchPatient = async name => {
 };
 
 export const tallyAccuracy = async (patient, word, goodOrBad) => {
-    const result = await fetch(`/api/tally`, {
+    await fetch(`/api/tally`, {
         method: 'PUT',
         body: JSON.stringify({
             patient,

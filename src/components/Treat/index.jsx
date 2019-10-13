@@ -1,52 +1,95 @@
-import React from 'react';
-import { useMachine } from '@xstate/react';
-import treatmentMachine from '../../treatmentMachine';
+import React, { useEffect } from 'react';
+import { useService } from '@xstate/react';
 
 import Word from './Word';
 
 import styles from './treat.module.css';
 
 export default function Words(props) {
-    const [machine, send] = useMachine(treatmentMachine, { context: { patient: props.patient } });
+    const [current, send] = useService(props.service);
 
-    if (machine.matches('loading')) {
+    useEffect(() => {
+        const listener = event => {
+            if (event.metaKey && event.key === 'Enter') {
+                event.preventDefault();
+                if (event.shiftKey) {
+                    send('PREVIOUS');
+                } else {
+                    send('NEXT');
+                }
+            }
+        };
+        document.body.addEventListener('keydown', listener);
+        return () => {
+            document.body.removeEventListener('keydown', listener);
+        };
+    }, [send]);
+
+    if (current.matches('loading') || current.matches('waiting')) {
         return <div>loading</div>;
     }
-    if (machine.matches('notes')) {
+    if (current.matches('notes') || current.matches('review')) {
         return (
             <div className={styles.container}>
                 <div className={styles.notes}>
                     <h1>Notes</h1>
-                    {machine.context.notes.map((note, i) => (
+                    {current.context.notes.map((note, i) => (
                         <div key={i}>
                             <h3>{note.date}</h3>
                             <div>{note.text}</div>
                         </div>
                     ))}
                 </div>
-                <button className={styles.notesButton} onClick={() => send('READY')}>
+                <button className={styles.notesButton} onClick={() => send('NEXT')}>
                     Ready
                 </button>
             </div>
         );
     }
-    if (machine.matches('pretreatment')) {
+    if (current.matches('pretreatment')) {
         return (
             <div className={styles.interstitial}>
                 <div>Welcome</div>
-                <button onClick={() => send('START')}>Start</button>
+                <button onClick={() => send('NEXT')}>Start</button>
             </div>
         );
     }
-    const word = machine.context.words[machine.context.currentWord];
-    return (
-        <div>
-            <Word
-                word={word}
-                key={word.word}
-                next={() => send('NEXT')}
-                previous={() => send('PREVIOUS')}
-            />
-        </div>
-    );
+
+    if (current.matches('treating')) {
+        const word = current.context.words[current.context.currentWord];
+
+        return (
+            <div>
+                <Word word={word} key={word.word} finished={() => send('FINISHED')} />
+            </div>
+        );
+    }
+
+    if (current.matches('treating')) {
+        const word = current.context.words[current.context.currentWord];
+
+        return (
+            <div>
+                <Word
+                    word={word}
+                    key={word.word}
+                    next={() => send('NEXT')}
+                    previous={() => send('PREVIOUS')}
+                    finished={() => send('FINISHED')}
+                />
+            </div>
+        );
+    }
+
+    if (current.matches('finished')) {
+        return (
+            <div className={styles.interstitial}>
+                <div>Finished</div>
+            </div>
+        );
+    }
+
+    if (current.matches('done')) {
+        return <div />;
+    }
 }

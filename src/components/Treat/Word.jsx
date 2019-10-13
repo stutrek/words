@@ -1,49 +1,25 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import styles from './treat.module.css';
 
 export default function Word(props) {
-    const { word, next, previous } = props;
+    const { word } = props;
 
     const [notes, setNotes] = useState(word.notes);
-
-    useEffect(() => {
-        const listener = event => {
-            if (event.metaKey === true) {
-                if (event.key === 'ArrowLeft') {
-                    event.preventDefault();
-                    previous();
-                }
-                if (event.key === 'ArrowRight') {
-                    event.preventDefault();
-                    next();
-                }
-            }
-        };
-        document.body.addEventListener('keydown', listener);
-        return () => {
-            document.body.removeEventListener('keydown', listener);
-        };
-    });
-
     const onChange = useCallback(
         event => {
-            console.log(event);
-            if (event.altKey === false) {
-                setNotes(event.currentTarget.value);
-                event.preventDefault();
-                return;
-            }
+            setNotes(event.currentTarget.value);
         },
         [setNotes]
     );
 
     return (
-        <div className={styles.container}>
+        <div className={styles.wordContainer}>
             <div className={styles.word}>
                 <span>{props.word.word}</span>
             </div>
             <textarea onChange={onChange} value={notes}></textarea>
+            <button onClick={props.finished}>Finish</button>
         </div>
     );
 }

@@ -7,7 +7,7 @@ import Treat from './components/Treat';
 import patientMachine from './patientMachine';
 
 function App() {
-    const [current, send] = useMachine(patientMachine);
+    const [current, send, service] = useMachine(patientMachine);
 
     const pickPatient = useCallback(
         patient => {
@@ -23,7 +23,7 @@ function App() {
         return <PatientPicker pickPatient={pickPatient} patients={current.context.patients} />;
     }
     if (current.matches('treat')) {
-        return <Treat patient={current.context.patient} />;
+        return <Treat service={service.children.get('treatment')} />;
     }
 
     return <div>whoops</div>;

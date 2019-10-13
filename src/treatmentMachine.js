@@ -14,7 +14,7 @@ const errorFeedbackStates = {
     },
 };
 
-export default Machine({
+const treatmentMachine = Machine({
     id: 'treatment',
     context: {
         patient: undefined,
@@ -22,13 +22,21 @@ export default Machine({
         words: undefined,
         notes: undefined,
     },
-    initial: 'loading',
+    initial: 'waiting',
     states: {
+        waiting: {
+            on: {
+                LOAD: 'loading',
+            },
+        },
         loading: {
+            entry: assign((context, event) => ({
+                patient: event.patient,
+            })),
             invoke: {
                 id: 'fetchPatient',
                 src: (context, event) => {
-                    return fetchPatient(context.patient);
+                    return fetchPatient(event.patient);
                 },
                 onDone: {
                     actions: assign({
@@ -44,12 +52,12 @@ export default Machine({
         },
         notes: {
             on: {
-                READY: 'pretreatment',
+                NEXT: 'pretreatment',
             },
         },
         pretreatment: {
             on: {
-                START: 'treating',
+                NEXT: 'treating',
             },
         },
         treating: {
@@ -71,9 +79,22 @@ export default Machine({
         },
         finished: {
             on: {
-                HANGUP: 'notes',
+                NEXT: 'review',
             },
         },
-        error: {},
+        review: {
+            on: {
+                NEXT: 'done',
+                ERROR: 'error',
+            },
+        },
+        done: {
+            type: 'final',
+        },
+        error: {
+            type: 'final',
+        },
     },
 });
+
+export default treatmentMachine;
